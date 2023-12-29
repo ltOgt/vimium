@@ -46,32 +46,47 @@ Iterable<({LogicalKeyboardKey first, LogicalKeyboardKey second})> _generatorLeft
       yield (first: bucket, second: left);
     }
   }
+  for (final right in _right) {
+    for (final bucket in _bucket) {
+      yield (first: bucket, second: right);
+    }
+  }
+  for (final overflow in _overflow) {
+    for (final bucket in _bucket) {
+      yield (first: bucket, second: overflow);
+    }
+  }
+  for (final bucket1 in _bucket) {
+    for (final bucket in _bucket) {
+      yield (first: bucket, second: bucket1);
+    }
+  }
 }
 
 // only use left with bucket for now, make adjustable later
 
 final Set<LogicalKeyboardKey> _left = {
   /// asdf, mixed
-  // LogicalKeyboardKey.keyA,
-  // LogicalKeyboardKey.keyD,
-  // LogicalKeyboardKey.keyF,
-  // LogicalKeyboardKey.keyS,
+  LogicalKeyboardKey.keyA,
+  LogicalKeyboardKey.keyD,
   LogicalKeyboardKey.keyF,
   LogicalKeyboardKey.keyS,
-  LogicalKeyboardKey.keyD,
-  LogicalKeyboardKey.keyA,
+  // LogicalKeyboardKey.keyF,
+  // LogicalKeyboardKey.keyS,
+  // LogicalKeyboardKey.keyD,
+  // LogicalKeyboardKey.keyA,
 };
 
 final Set<LogicalKeyboardKey> _right = {
   /// hjkl, mixed
-  // LogicalKeyboardKey.keyJ,
-  // LogicalKeyboardKey.keyH,
-  // LogicalKeyboardKey.keyL,
-  // LogicalKeyboardKey.keyK,
-  LogicalKeyboardKey.keyH,
-  LogicalKeyboardKey.keyK,
   LogicalKeyboardKey.keyJ,
+  LogicalKeyboardKey.keyH,
   LogicalKeyboardKey.keyL,
+  LogicalKeyboardKey.keyK,
+  // LogicalKeyboardKey.keyH,
+  // LogicalKeyboardKey.keyK,
+  // LogicalKeyboardKey.keyJ,
+  // LogicalKeyboardKey.keyL,
 };
 
 final Set<LogicalKeyboardKey> _bucket = {
