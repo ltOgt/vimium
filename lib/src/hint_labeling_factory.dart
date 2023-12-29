@@ -1,30 +1,33 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/services.dart';
 
-class HintLabeling {
-  final List<HintLabel> labels;
+class HintLabeling<T> {
+  final List<HintLabel<T>> labels;
 
   HintLabeling({required this.labels});
 }
 
-class HintLabel {
-  final Offset center;
+class HintLabel<T> {
+  final T data;
   final LABEL keys;
 
   HintLabel({
-    required this.center,
+    required this.data,
     required this.keys,
   });
+
+  String joinKeys() => "${keys.first.keyLabel}${keys.second.keyLabel}";
 }
 
-abstract class HintLabelingFactoryBase {
-  HintLabeling create(List<Offset> offsets);
+abstract class HintLabelingFactoryBase<T> {
+  HintLabeling<T> create(List<T> data);
 }
 
 typedef LABEL = ({LogicalKeyboardKey first, LogicalKeyboardKey second});
 
-class HintLabelingFactory implements HintLabelingFactoryBase {
-  HintLabeling create(List<Offset> offsets) {
+class HintLabelingFactory<T> implements HintLabelingFactoryBase<T> {
+  @override
+  HintLabeling<T> create(List<T> data) {
     final generator = _generatorLeftBucket().iterator;
     LABEL getAndNext() {
       generator.moveNext();
@@ -32,8 +35,8 @@ class HintLabelingFactory implements HintLabelingFactoryBase {
     }
 
     final labels = [
-      for (final offset in offsets) //
-        HintLabel(center: offset, keys: getAndNext()),
+      for (final d in data) //
+        HintLabel(data: d, keys: getAndNext()),
     ];
 
     return HintLabeling(labels: labels);
