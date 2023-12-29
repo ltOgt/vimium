@@ -4,18 +4,31 @@ import 'package:flutter/material.dart';
 import 'package:ltogt_utils_flutter/ltogt_utils_flutter.dart';
 import 'package:vimium/vimium.dart';
 
-class V1_FirstTestToPlugAndPlay extends StatelessWidget {
+class V1_FirstTestToPlugAndPlay extends StatefulWidget {
   const V1_FirstTestToPlugAndPlay({super.key});
+
+  @override
+  State<V1_FirstTestToPlugAndPlay> createState() => _V1_FirstTestToPlugAndPlayState();
+}
+
+class _V1_FirstTestToPlugAndPlayState extends ComponentState<V1_FirstTestToPlugAndPlay> {
+  late final componentFocus = StateComponentFocus(state: this);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData.dark(),
       home: Scaffold(
-        body: MyWidget(),
+        body: KeyboardListener(
+          autofocus: true,
+          focusNode: componentFocus.obj,
+          onKeyEvent: VimiumManager.instance.onKeyEvent,
+          child: const MyWidget(),
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             VimiumManager.instance.toggle();
+            setState(() {});
           },
           child: const Icon(Icons.add),
         ),
@@ -31,8 +44,8 @@ class MyWidget extends StatelessWidget {
         color: RandomUtils().randomFrom([
           Colors.red,
           Colors.blue,
-          Colors.white,
-          Colors.white,
+          Colors.grey,
+          Colors.green,
         ]),
         width: RandomUtils().randomFrom([100, 150, 200]),
         height: RandomUtils().randomFrom([100, 150, 300]),
@@ -43,6 +56,7 @@ class MyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //return Center(child: contain(VimiumContainer(action: () {}, child: Text("Moin"))));
     return Column(
       children: [
         contain(
@@ -291,6 +305,7 @@ class VimiumManager {
   void _unRegister(_VimiumContainerState state) => _containers.remove(state);
 
   bool _showing = false;
+  bool get isShown => _showing;
 
   void toggle() {
     if (_showing) {
@@ -304,6 +319,14 @@ class VimiumManager {
       for (var e in HintLabelingFactory<_VimiumContainerState>().create(_containers.toList()).labels) {
         e.data.showHint(e.joinKeys());
       }
+    }
+  }
+
+  void onKeyEvent(KeyEvent value) {
+    if (!isShown) return;
+    print("keyEvent: ${value.character}");
+    for (final container in _containers) {
+      container.processKeyEvent(value);
     }
   }
 }
@@ -334,6 +357,32 @@ class _VimiumContainerState extends State<VimiumContainer> {
     VimiumManager.instance._register(this);
   }
 
+  bool matchedFirst = false;
+  void processKeyEvent(KeyEvent value) {
+    final char = value.character?.toUpperCase();
+    if (hint == null || char == null) return;
+    if (!matchedFirst) {
+      setState(() {
+        matchedFirst = hint!.startsWith(char);
+      });
+    } else {
+      setState(() {
+        matchedFirst = false;
+      });
+      if (hint!.endsWith(char)) {
+        print("was matched");
+
+        wasMatched();
+      }
+    }
+  }
+
+  void wasMatched() {
+    triggerAction();
+    highlight();
+    // VimiumManager.instance.toggle();
+  }
+
   String? hint;
   void showHint(String hint) {
     setState(() {
@@ -348,6 +397,19 @@ class _VimiumContainerState extends State<VimiumContainer> {
   void hideHint() {
     setState(() {
       hint = null;
+    });
+  }
+
+  bool isHighlighted = false;
+  void highlight() async {
+    if (isHighlighted) return;
+    setState(() {
+      isHighlighted = true;
+    });
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+    setState(() {
+      isHighlighted = false;
     });
   }
 
@@ -368,7 +430,11 @@ class _VimiumContainerState extends State<VimiumContainer> {
         ),
         Center(
           child: Container(
-            color: Colors.orange,
+            color: isHighlighted
+                ? Colors.pink
+                : matchedFirst
+                    ? Colors.lightBlueAccent
+                    : Colors.orange,
             padding: const EdgeInsets.all(8),
             child: Text(hint!),
           ),
