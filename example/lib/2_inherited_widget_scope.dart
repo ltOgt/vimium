@@ -91,33 +91,22 @@ class _MyWidgetState extends State<MyWidget> {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blueAccent),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Text("Content"),
+                    const Text("Content"),
                     Spacer(),
-                    Row(
-                      children: [
-                        _ClickableReset("Row 1 - Action 1"),
-                        _ClickableReset("Row 1 - Action 2"),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        _ClickableReset("Row 2 - Action 1"),
-                        _ClickableReset("Row 2 - Action 2"),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        _ClickableReset("Row 3 - Action 1"),
-                        _ClickableReset("Row 3 - Action 2"),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        _ClickableReset("Row 4 - Action 1"),
-                        _ClickableReset("Row 4 - Action 2"),
-                      ],
+                    SizedBox(
+                      height: 400,
+                      width: 400,
+                      child: ListView.builder(
+                        itemCount: 1000,
+                        itemBuilder: (context, index) => Row(
+                          children: [
+                            _ClickableReset("Row $index - Action 1"),
+                            _ClickableReset("Row $index - Action 2"),
+                          ],
+                        ),
+                      ),
                     ),
                     Spacer(),
                   ],
