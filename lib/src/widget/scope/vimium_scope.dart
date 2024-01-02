@@ -70,6 +70,7 @@ class _VimiumScopeState<T> extends State<VimiumScope> with VimiumScopeManager {
   @override
   void dispose() {
     focusNode.dispose();
+    disposeManager();
     super.dispose();
   }
 

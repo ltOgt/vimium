@@ -36,4 +36,8 @@ mixin VimiumScopeManager {
       node.clearLabel();
     }
   }
+
+  void disposeManager() {
+    _nodes.clear();
+  }
 }
