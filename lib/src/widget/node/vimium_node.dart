@@ -23,9 +23,9 @@ mixin VimiumNode<T extends StatefulWidget> on State<T> {
     });
   }
 
-  bool handleKeyEvent(KeyEvent keyEvent) {
+  VimiumLabelMatchKind? handleKeyEvent(KeyEvent keyEvent) {
     final char = keyEvent.character?.toUpperCase();
-    if (_label == null || char == null) return false;
+    if (_label == null || char == null) return null;
 
     setState(() {
       _matchState = _label!.matchKey(char, _matchState);
@@ -33,9 +33,8 @@ mixin VimiumNode<T extends StatefulWidget> on State<T> {
 
     if (_matchState?.kind == VimiumLabelMatchKind.full) {
       onSelected();
-      return true;
     }
-    return false;
+    return _matchState?.kind;
   }
 
   bool register(VimiumNode self, BuildContext context) {

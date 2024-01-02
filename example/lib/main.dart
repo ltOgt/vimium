@@ -78,6 +78,9 @@ class _MyWidgetState extends State<MyWidget> {
         onMatched: () => setState(() {
           isOverlayShown = false;
         }),
+        onCancel: () => setState(() {
+          isOverlayShown = false;
+        }),
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.blueAccent),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vimium/src/label/labeling/labeling_factory_base.dart';
 import 'package:vimium/src/label/labeling/labeling_factory_two_keys.dart';
+import 'package:vimium/src/label/vimium_label_match_state.dart';
 
 import 'package:vimium/src/widget/scope/vimium_scope_inherited.dart';
 import 'package:vimium/src/widget/scope/vimium_scope_manager.dart';
@@ -11,6 +13,7 @@ class VimiumScope extends StatefulWidget {
     super.key,
     required this.isOverlayShown,
     required this.onMatched,
+    required this.onCancel,
     required this.child,
     this.labelingFactory = const LabelingFactoryTwoKeys(),
   });
@@ -20,6 +23,9 @@ class VimiumScope extends StatefulWidget {
 
   /// Called when a [VimiumLabel] has been matched for a [VimiumNode].
   final VoidCallback onMatched;
+
+  /// Called when the user cancelled the completion by pressing escape.
+  final VoidCallback onCancel;
 
   /// The sub tree in which [VimiumNode]s can self-register to this [VimiumScopeManager].
   final Widget child;
@@ -71,18 +77,18 @@ class _VimiumScopeState<T> extends State<VimiumScope> with VimiumScopeManager {
 
   void _onKey(KeyEvent keyEvent) async {
     if (!widget.isOverlayShown) return;
+    if (keyEvent.logicalKey == LogicalKeyboardKey.escape) {
+      widget.onCancel();
+      return;
+    }
 
     for (final subTree in nodes) {
-      if (subTree.handleKeyEvent(keyEvent)) {
-        _onMatched();
-        break;
+      final matchKind = subTree.handleKeyEvent(keyEvent);
+      if (matchKind == VimiumLabelMatchKind.full) {
+        widget.onMatched();
+        return;
       }
     }
-  }
-
-  void _onMatched() async {
-    widget.onMatched();
-    clearLabels();
   }
 
   @override
