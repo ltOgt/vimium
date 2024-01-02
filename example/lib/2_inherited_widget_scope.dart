@@ -2,6 +2,7 @@
 
 import 'package:example/vimium_scope.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class V2_InheritedWidgetScopeApp extends StatelessWidget {
   const V2_InheritedWidgetScopeApp({super.key});
@@ -27,6 +28,27 @@ class MyWidget extends StatefulWidget {
 class _MyWidgetState extends State<MyWidget> {
   bool isOverlayShown = true;
 
+  bool handleKeyEvent(KeyEvent e) {
+    if (HardwareKeyboard.instance.isMetaPressed && e.character?.toUpperCase() == "F") {
+      setState(() {
+        isOverlayShown = !isOverlayShown;
+      });
+    }
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(handleKeyEvent);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(handleKeyEvent);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +56,7 @@ class _MyWidgetState extends State<MyWidget> {
         onPressed: () => setState(() {
           isOverlayShown = !isOverlayShown;
         }),
-        child: isOverlayShown ? const Icon(Icons.highlight) : const Icon(Icons.highlight_outlined),
+        child: const Text("META + F"),
       ),
       body: VimiumScope(
         isOverlayShown: isOverlayShown,

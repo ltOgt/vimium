@@ -251,15 +251,17 @@ class _VimiumClickNodeState extends State<VimiumClickNode> with VimiumSubTree {
   @override
   Widget buildLabelWrap(Widget child, String label, bool isPartialMatch) {
     return Stack(
+      alignment: Alignment.center,
       children: [
-        Center(
-          child: child,
-        ),
+        child,
         Center(
           child: IgnorePointer(
             child: Container(
-              padding: const EdgeInsets.all(8),
-              color: isPartialMatch ? Colors.blue : Colors.yellow,
+              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+              decoration: BoxDecoration(
+                color: isPartialMatch ? Colors.blue : Colors.yellow,
+                boxShadow: const [BoxShadow()],
+              ),
               child: Text(
                 label,
                 style: const TextStyle(
