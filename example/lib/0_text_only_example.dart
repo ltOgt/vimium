@@ -40,7 +40,7 @@ class _MyWidgetState extends ComponentState<_MyWidget> {
       newMin: 1,
       newMax: maxVal.toDouble(),
     ).round();
-    final labelPairs = HintLabelingFactory().create(Range(currentCount).map((e) => Offset.zero).toList());
+    final labelPairs = TwoKeyLabelingFactory().create(Range(currentCount).map((e) => Offset.zero).toList());
     labels = labelPairs.labels.map((e) => "${e.keys.first.keyLabel}${e.keys.second.keyLabel}").toList();
   }
 

@@ -316,7 +316,7 @@ class VimiumManager {
     } else {
       _showing = true;
 
-      for (var e in HintLabelingFactory<_VimiumContainerState>().create(_containers.toList()).labels) {
+      for (var e in TwoKeyLabelingFactory<_VimiumContainerState>().create(_containers.toList()).labels) {
         e.data.showHint(e.joinKeys());
       }
     }

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vimium/src/hint_labeling_factory.dart';
+import 'package:vimium/src/label/labeling/labeling_factory_two_keys.dart';
 
 void main() {
   group('HintLabelingFactory', () {
     test("Produces for clustered zero offestes", () {
-      final labeling = HintLabelingFactory().create([
+      final labels = LabelingFactoryTwoKeys().create([
         Offset.zero,
         Offset.zero,
         Offset.zero,
@@ -13,11 +13,10 @@ void main() {
       ]);
 
       expect(
-        labeling.labels //
-            .map((e) => e.keys)
-            .map((e) => "${e.first.keyLabel}${e.second.keyLabel}")
+        labels //
+            .map((e) => e.label.value)
             .toList(),
-        ["WF", "CF", "MF", "PF", "GF"],
+        ["WA", "CA", "MA", "PA", "GA"],
       );
     });
   });

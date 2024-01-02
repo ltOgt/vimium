@@ -1,12 +1,50 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:ltogt_utils_flutter/ltogt_utils_flutter.dart';
+
 import 'package:vimium/vimium.dart';
 
 // =============================================================================
 // =============================================================================
 // =============================================================================
 
+/// Holds a list of [VimiumNode]s that self-registered to receive [VimiumLabel]s.
+mixin VimiumScopeManager {
+  bool get isOverlayShown;
+
+  final Set<VimiumNode> _nodes = {};
+
+  /// Register a [VimiumNode] to receive a label
+  /// the next time [assignLabels] is called.
+  bool register(VimiumNode node) {
+    return _nodes.add(node);
+  }
+
+  /// Remove the [node] from tracking for [assignLabels].
+  bool unRegister(VimiumNode node) {
+    return _nodes.remove(node);
+  }
+
+  /// assign a unique label to each [VimiumNode] that called [register]
+  void assignLabels() {
+    final labels = TwoKeyLabelingFactory<VimiumNode>().create(_nodes.toList());
+    for (final label in labels) {
+      label.data.addLabel(label.joinKeys());
+    }
+  }
+
+  /// clear the labels for each [VimiumNode] that is still [register]ed
+  void clearLabels() {
+    for (final node in _nodes) {
+      node.clearLabel();
+    }
+  }
+}
+
+// =============================================================================
+// =============================================================================
+// =============================================================================
+
+/// The root of a sub-tree under which [VimiumNode]s can register to this scope.
 class VimiumScope extends StatefulWidget {
   const VimiumScope({
     super.key,
@@ -15,37 +53,32 @@ class VimiumScope extends StatefulWidget {
     required this.child,
   });
 
+  /// Whether the [VimiumLabel]s for the registered [VimiumNode]s are shown.
   final bool isOverlayShown;
+
+  /// Called when a [VimiumLabel] has been matched for a [VimiumNode].
   final VoidCallback onMatched;
+
+  /// The sub tree in which [VimiumNode]s can self-register to this [VimiumScopeManager].
   final Widget child;
 
   @override
   State<VimiumScope> createState() => _VimiumScopeState();
 }
 
-class _VimiumScopeState<T> extends State<VimiumScope> {
-  final Set<VimiumSubTree> _subTrees = {};
-
-  /// does not automatically update on [_subTrees] change.
-  /// only called when show or no show changes
-  void _createKeyMapping() {
-    final labeling = TwoKeyLabelingFactory<VimiumSubTree>().create(_subTrees.toList());
-    for (final label in labeling.labels) {
-      label.data.addLabel(label.joinKeys());
-    }
-  }
+class _VimiumScopeState<T> extends State<VimiumScope> with VimiumScopeManager {
+  @override
+  bool get isOverlayShown => widget.isOverlayShown;
 
   @override
   void initState() {
     super.initState();
     if (widget.isOverlayShown) {
-      // need to wait for the child tree to be build
-      RenderHelper.nextFrameFuture.then(
-        (_) {
-          if (!widget.isOverlayShown) return;
-          _createKeyMapping();
-        },
-      );
+      // need to wait for the child tree to be build at least once.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!widget.isOverlayShown) return;
+        assignLabels();
+      });
     }
   }
 
@@ -54,21 +87,14 @@ class _VimiumScopeState<T> extends State<VimiumScope> {
     super.didUpdateWidget(oldWidget);
     if (widget.isOverlayShown != oldWidget.isOverlayShown) {
       if (widget.isOverlayShown) {
-        _createKeyMapping();
+        assignLabels();
       } else {
-        for (final subTree in _subTrees) {
-          subTree.clearLabel();
-        }
+        clearLabels();
       }
     }
   }
 
-  void _onMatched() async {
-    widget.onMatched();
-    for (final subTree in _subTrees) {
-      subTree.clearLabel();
-    }
-  }
+  // ---------------------------------------------------------------------------
 
   final focusNode = FocusNode();
   @override
@@ -77,24 +103,32 @@ class _VimiumScopeState<T> extends State<VimiumScope> {
     super.dispose();
   }
 
+  // ---------------------------------------------------------------------------
+
+  void _onKey(KeyEvent keyEvent) async {
+    if (!widget.isOverlayShown) return;
+
+    for (final subTree in _nodes) {
+      if (subTree.handleKeyEvent(keyEvent)) {
+        _onMatched();
+        break;
+      }
+    }
+  }
+
+  void _onMatched() async {
+    widget.onMatched();
+    clearLabels();
+  }
+
   @override
   Widget build(BuildContext context) {
     return KeyboardListener(
       focusNode: focusNode,
       autofocus: true,
-      onKeyEvent: (keyEvent) async {
-        if (!widget.isOverlayShown) return;
-
-        for (final subTree in _subTrees) {
-          if (subTree.handleKeyEvent(keyEvent)) {
-            _onMatched();
-            break;
-          }
-        }
-      },
-      child: _VimiumScopeInherited._(
-        subTrees: _subTrees,
-        isOverlayShown: widget.isOverlayShown,
+      onKeyEvent: _onKey,
+      child: VimiumScopeInherited._(
+        vimiumScopeManager: this,
         child: widget.child,
       ),
     );
@@ -105,41 +139,28 @@ class _VimiumScopeState<T> extends State<VimiumScope> {
 // =============================================================================
 // =============================================================================
 
-class _VimiumScopeInherited extends InheritedWidget {
-  final Set<VimiumSubTree> _subTrees;
-  final bool isOverlayShown;
+class VimiumScopeInherited extends InheritedWidget {
+  final VimiumScopeManager vimiumScopeManager;
 
-  const _VimiumScopeInherited._({
-    required Set<VimiumSubTree> subTrees,
-    required this.isOverlayShown,
+  const VimiumScopeInherited._({
+    required this.vimiumScopeManager,
     required super.child,
-  }) : _subTrees = subTrees;
+  });
 
-  static _VimiumScopeInherited? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_VimiumScopeInherited>();
-  }
-
-  bool register(VimiumSubTree subTree) {
-    return _subTrees.add(subTree);
-  }
-
-  bool unRegister(VimiumSubTree subTree) {
-    return _subTrees.remove(subTree);
+  static VimiumScopeInherited? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<VimiumScopeInherited>();
   }
 
   @override
-  bool updateShouldNotify(
-          covariant _VimiumScopeInherited
-              oldWidget) => // // TODO maybe can just be false since state calls listeners anyways
-      oldWidget.isOverlayShown != isOverlayShown;
+  bool updateShouldNotify(_) => false;
 }
 
 // =============================================================================
 // =============================================================================
 // =============================================================================
 
-mixin VimiumSubTree<T extends StatefulWidget> on State<T> {
-  _VimiumScopeInherited? _scope;
+mixin VimiumNode<T extends StatefulWidget> on State<T> {
+  VimiumScopeInherited? _scope;
 
   String? _label;
   void addLabel(String? label) {
@@ -176,20 +197,20 @@ mixin VimiumSubTree<T extends StatefulWidget> on State<T> {
     }
   }
 
-  bool register(VimiumSubTree self, BuildContext context) {
-    _scope = _VimiumScopeInherited.of(context);
+  bool register(VimiumNode self, BuildContext context) {
+    _scope = VimiumScopeInherited.of(context);
     if (_scope == null) {
       assert(false, "No VimiumScope found in context");
       return false;
     }
 
-    return _scope!.register(self);
+    return _scope!.vimiumScopeManager.register(self);
   }
 
-  bool unRegister(VimiumSubTree self, BuildContext context) {
+  bool unRegister(VimiumNode self, BuildContext context) {
     if (_scope == null) return false;
 
-    return _scope!.unRegister(self);
+    return _scope!.vimiumScopeManager.unRegister(self);
   }
 
   @mustCallSuper
@@ -239,7 +260,7 @@ class VimiumClickNode extends StatefulWidget {
   State<VimiumClickNode> createState() => _VimiumClickNodeState();
 }
 
-class _VimiumClickNodeState extends State<VimiumClickNode> with VimiumSubTree {
+class _VimiumClickNodeState extends State<VimiumClickNode> with VimiumNode {
   final globalKey = GlobalKey();
 
   @override
