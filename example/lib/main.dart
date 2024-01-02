@@ -180,8 +180,8 @@ class __ClickableResetState extends State<_ClickableReset> {
 
   @override
   Widget build(BuildContext context) {
+    // NOTE: explicitly not wired up to `press`, you can put this further up in the tree
     return VimiumClickNode(
-      // NOTE: explicitly not wired up to `press`, you can put this further up in the tree
       child: Container(
         margin: const EdgeInsets.all(8.123),
         color: isPressed ? Colors.black : Colors.grey,
