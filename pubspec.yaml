@@ -1,5 +1,5 @@
 name: vimium
-description: "A new Flutter package project."
+description: "Type-to-click like in vimium"
 version: 0.0.1
 homepage: https://github.com/ltOgt/vimium
 publish_to: "none"
