@@ -8,5 +8,5 @@ abstract class VimiumLabelBase {
 
   /// Checks the user-pressed [key] against the [previousState]
   /// to emit a new [VimiumLabelMatchState]
-  VimiumLabelMatchState matchKey(String key, VimiumLabelMatchState previousState);
+  VimiumLabelMatchState? matchKey(String key, VimiumLabelMatchState? previousState);
 }

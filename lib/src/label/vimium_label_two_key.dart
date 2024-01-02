@@ -19,16 +19,16 @@ class VimiumLabelTwoKeys extends VimiumLabelBase {
   }) : value = "${first.keyLabel}${second.keyLabel}";
 
   @override
-  VimiumLabelMatchState matchKey(String key, VimiumLabelMatchState previousState) {
+  VimiumLabelMatchState? matchKey(String key, VimiumLabelMatchState? previousState) {
     assert(key.characters.length == 1, "Expected exactly one key, got ${key.length} ($key)");
 
-    return switch (previousState.kind) {
-      VimiumLabelMatchKind.no => value.startsWith(key) //
+    return switch (previousState?.kind) {
+      null => value.startsWith(key) //
           ? VimiumLabelMatchState.partial()
-          : VimiumLabelMatchState.no(),
+          : null,
       VimiumLabelMatchKind.partial => value.endsWith(key) //
           ? VimiumLabelMatchState.full()
-          : VimiumLabelMatchState.no(),
+          : null,
       VimiumLabelMatchKind.full => throw StateError("Don't continue matching after full match"),
     };
   }

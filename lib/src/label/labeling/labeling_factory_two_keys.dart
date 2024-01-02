@@ -3,10 +3,13 @@ import 'package:vimium/src/label/labeling/labeling.dart';
 import 'package:vimium/src/label/labeling/labeling_factory_base.dart';
 import 'package:vimium/src/label/vimium_label_two_key.dart';
 
-class LabelingFactoryTwoKeys<T> implements LabelingFactoryBase<T> {
-  /// Note: currently can only cover data with length up to 122
+/// Labeling factory for [VimiumLabelTwoKeys]
+class LabelingFactoryTwoKeys implements LabelingFactoryBase<VimiumLabelTwoKeys> {
+  const LabelingFactoryTwoKeys();
+
+  /// Note: currently can only cover data with length up to 122 // TODO
   @override
-  List<Labeling<T>> create(List<T> data) {
+  List<Labeling<T, VimiumLabelTwoKeys>> create<T>(List<T> data) {
     assert(data.length <= _coveredLength());
 
     final generator = _generatorLeftBucket().iterator;

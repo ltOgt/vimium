@@ -9,11 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # TODO MIGHT NEED TO ADJUST RELATIVE INPUT
-  ltogt_utils_flutter:
-    path: /Users/omni/repos/package/ltogt_utils_flutter
-  relation_canvas:
-    path: /Users/omni/repos/package/relation_canvas
   vimium:
     path: ../
 

@@ -1,5 +1,4 @@
 enum VimiumLabelMatchKind {
-  no,
   partial,
   full;
 }
@@ -11,7 +10,6 @@ class VimiumLabelMatchState {
   final VimiumLabelMatchKind kind;
 
   VimiumLabelMatchState({required this.kind});
-  VimiumLabelMatchState.no() : kind = VimiumLabelMatchKind.no;
   VimiumLabelMatchState.partial() : kind = VimiumLabelMatchKind.partial;
   VimiumLabelMatchState.full() : kind = VimiumLabelMatchKind.full;
 }

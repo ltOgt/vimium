@@ -2,9 +2,9 @@
 
 import 'package:vimium/src/label/vimium_label_base.dart';
 
-class Labeling<T> {
-  final T data;
-  final VimiumLabelBase label;
+class Labeling<D, L extends VimiumLabelBase> {
+  final D data;
+  final L label;
 
   Labeling({
     required this.data,
