@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:ltogt_utils_flutter/ltogt_utils_flutter.dart';
 import 'package:vimium/vimium.dart';
 
@@ -65,10 +64,6 @@ class _VimiumScopeState<T> extends State<VimiumScope> {
   }
 
   void _onMatched() async {
-    await RenderHelper.nextFrameFuture;
-
-    return;
-
     widget.onMatched();
     for (final subTree in _subTrees) {
       subTree.clearLabel();
@@ -87,7 +82,7 @@ class _VimiumScopeState<T> extends State<VimiumScope> {
     return KeyboardListener(
       focusNode: focusNode,
       autofocus: true,
-      onKeyEvent: (keyEvent) {
+      onKeyEvent: (keyEvent) async {
         if (!widget.isOverlayShown) return;
 
         for (final subTree in _subTrees) {
@@ -174,8 +169,6 @@ mixin VimiumSubTree<T extends StatefulWidget> on State<T> {
         matchedFirst = false;
       });
       if (_label!.endsWith(char)) {
-        print("was matched");
-
         onSelected();
         return true;
       }
@@ -214,18 +207,8 @@ mixin VimiumSubTree<T extends StatefulWidget> on State<T> {
   }
 
   Widget buildWrapper(Widget child) => _label == null //
-      ? GestureDetector(
-          onTap: () {
-            print("asd");
-          },
-          child: child,
-        )
-      : GestureDetector(
-          onTap: () {
-            print("asd");
-          },
-          child: buildLabelWrap(child, _label!, matchedFirst),
-        );
+      ? child
+      : buildLabelWrap(child, _label!, matchedFirst);
 
   // =============================================================================
 
@@ -291,31 +274,18 @@ class _VimiumClickNodeState extends State<VimiumClickNode> with VimiumSubTree {
   }
 
   @override
-  void onSelected() async {
-    // final rect = RenderHelper.getRectForContext(context: context);
+  void onSelected() {
     final rect = RenderHelper.getRect(globalKey: globalKey);
     if (rect == null) {
       assert(false, "No rect found for context");
       return;
     }
 
-    RenderBox renderbox = globalKey.currentContext!.findRenderObject() as RenderBox;
-    Offset position = renderbox.localToGlobal(Offset.zero);
-    double x = position.dx + 20;
-    double y = position.dy + 20;
-
-    print(x);
-    print(y);
-
     GestureBinding.instance.handlePointerEvent(PointerDownEvent(
-      position: Offset(x, y),
-    )); //trigger button up,
-
-    await Future.delayed(Duration(milliseconds: 500));
-    //add delay between up and down button
-
+      position: rect.center,
+    ));
     GestureBinding.instance.handlePointerEvent(PointerUpEvent(
-      position: Offset(x, y),
-    )); //trig
+      position: rect.center,
+    ));
   }
 }
